@@ -16,6 +16,7 @@ channel.exchange_declare(
     exchange_type='direct'
 )
 
+
 order = {
     'id': str(uuid.uuid4()),
     'user_email' : 'john.doe@example.com',
