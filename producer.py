@@ -3,14 +3,10 @@ from pika import exceptions
 import json
 import uuid
 
-
 try: 
     connection = pika.BlockingConnection(pika.ConnectionParameters("localhost"))
 except exceptions.AMQPConnectionError as e:
     print("Unable to establish connection to RabbitMQ Server.")
-    exit()
-
-    
     
     
 channel = connection.channel()
@@ -31,22 +27,27 @@ try:
     channel.basic_publish(
         exchange='order',
         routing_key='order.notify',
-        body=json.dump({
+        body=json.dumps({
             'user_email': order['user_email']
         })
     )
 except Exception as e:
-    print(e)
+    print(" [x] Unable to send notify message!")
+else:
+    print(" [x] Message sent to notify!")
 
 
-print(" [x] notify message sent!")
+try:
+    channel.basic_publish(
+        exchange='order',
+        routing_key='order.report',
+        body=json.dumps(order)
+    )
+except Exception as e:
+    print(" [x] Unable to send report message!")
+else:
+    print(' [x] Sent report message!')
 
-channel.basic_publish(
-    exchange='order',
-    routing_key='order.report',
-    body=json.dump(order)
-)
 
-print(' [x] Sent report message!')
-
+print("Closing Connection")
 connection.close()
